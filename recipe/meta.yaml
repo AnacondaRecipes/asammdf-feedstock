@@ -22,23 +22,24 @@ requirements:
     - pip
     - setuptools
     - wheel
-    - numpy >=1.23
+    - numpy {{ numpy }}
   run:
     - python
     - numpy >=1.23
-    - pandas
     - numexpr
-    - matplotlib-base
     - wheel
-    - canmatrix[arxml,dbc] >=0.9.5
-    - cchardet
-    - chardet
-    - lxml
+    - pandas
+    - canmatrix >=0.8
     - natsort
+    - lxml
     - lz4
-    - typing_extensions
-    - python-isal [x86_64]
     - python-dateutil
+    - typing_extensions 
+    #optional dependencies
+    - matplotlib-base  #fallback for Signal plotting
+    - cchardet #to detect non-standard Unicode encodings
+    - chardet #to detect non-standard Unicode encodings
+    - python-isal # [x86_64] for faster zlib compression/decompression
 
 test:
   requires:
@@ -47,7 +48,6 @@ test:
     - pip check
   imports:
     - asammdf
-
 
 about:
   home: https://github.com/danielhrisca/asammdf
