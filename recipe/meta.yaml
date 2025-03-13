@@ -1,5 +1,5 @@
 {% set name = "asammdf" %}
-{% set version = "7.3.9" %}
+{% set version = "8.2.4" %}
 
 package:
   name: {{ name|lower }}
@@ -7,47 +7,82 @@ package:
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 9246bcd9eafbee26468fd8a7fcdb5e2cf053bdca4fa8520ffbf6b0b21591ef3b
+  sha256: ea7757c690cfbf1790905aa048f38d6adf6f827091679ea5cf193ba745616a4f
+  patches:
+    - patches/0001-unvendor-libdeflate-from-the-CMakeLists.txt.patch
 
 build:
   number: 0
-  skip: True # [py<38]
-  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation --ignore-installed -vvv
+  entry_points:
+    - asammdf = asammdf.app.asammdfgui:main [gui]
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  skip: true  # [py<310]
+  ignore_run_exports:
+    #   ERROR (asammdf): run-exports library package main/osx-arm64::numpy==2.2.2=py310h3b2db8e_0 in requirements/run but it is not used (i.e. it is overdepending or perhaps statically linked? If that is what you want then add it to `build/ignore_run_exports`)
+    - numpy
+  missing_dso_whitelist:
+    #    INFO (asammdf,lib/python3.10/site-packages/asammdf/blocks/cutils.abi3.so): Needed DSO $RPATH/libdeflate.0.dylib found in the whitelist
+    - $RPATH/libdeflate*
 
 requirements:
   build:
     - {{ compiler('c') }}
+    - cmake
+    - libdeflate
   host:
     - python
     - pip
     - setuptools
     - wheel
-    - numpy {{ numpy }}
+    - scikit-build-core
+    - numpy >=2.0.0
   run:
     - python
-    - numpy >=1.23
-    - numexpr
-    - wheel
-    - pandas
-    - canmatrix >=0.8
-    - natsort
-    - lxml
+    - numpy >=2.0.0
+    # Need to add in main
+    - canmatrix #>=1.2
+    # Need to add in main
+    - isa-l
+    - lxml >=4.9.3
     - lz4
+    - numexpr
+    - pandas
     - python-dateutil
-    - typing_extensions 
-    #optional dependencies
-    - matplotlib-base  #fallback for Signal plotting
-    - cchardet #to detect non-standard Unicode encodings
-    - chardet #to detect non-standard Unicode encodings
-    - python-isal # [x86_64] for faster zlib compression/decompression
+    - typing-extensions >=4.10,<5
+    - libdeflate
+  run_constrained:
+    - faust-cchardet ==2.1.19
+    - hdf5storage >=0.1.19
 
 test:
-  requires:
-    - pip
-  commands:
-    - pip check
+  source_files:
+    - test
   imports:
     - asammdf
+  commands:
+    # python-can 4.2.2 requires msgpack, which is not installed.
+    # asammdf 8.2.4 has requirement canmatrix[arxml,dbc]>=1.2, but you have canmatrix 0.9.5.
+    #- pip check
+    # ++++++++++++++++++++++++++++++++++++++++++++++++
+    # ModuleNotFoundError: No module named 'pyqtgraph'
+    - pip install pyqtlet2  #asammdf --help
+    - asammdf --help
+    - pip install pyautogui  # all tests using this pkg
+    - pytest -v test
+  requires:
+    - pip
+    - pytest
+    - h5py
+    - pyarrow
+    - python-can
+    - scipy
+    - pyqtgraph  #asammdf --help
+    - pyqt  #asammdf --help
+    - pyside2  #asammdf --help
+    - pyside6  #asammdf --help
+    - msgpack-python  #asammdf --help
+    - natsort  #asammdf --help
+    - pyqtwebengine  #asammdf --help
 
 about:
   home: https://github.com/danielhrisca/asammdf
