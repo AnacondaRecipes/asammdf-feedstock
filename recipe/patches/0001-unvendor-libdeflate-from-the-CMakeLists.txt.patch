@@ -1,0 +1,30 @@
+From 44cc2e2bbac74630a9a4848645c7064a81ead81e Mon Sep 17 00:00:00 2001
+From: Andrii Osipov <aosipov@anaconda.com>
+Date: Thu, 13 Mar 2025 14:40:35 -0700
+Subject: [PATCH] unvendor libdeflate from the CMakeLists.txt
+
+---
+ CMakeLists.txt | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3456105..00d2b67 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -17,10 +17,11 @@ set(LIBDEFLATE_GZIP_SUPPORT OFF)
+ set(LIBDEFLATE_BUILD_GZIP OFF)
+   
+   # Add submodule libdeflate
+-add_subdirectory(ext/libdeflate EXCLUDE_FROM_ALL)
++# add_subdirectory(ext/libdeflate EXCLUDE_FROM_ALL)
++find_package(libdeflate REQUIRED)
+ 
+ python_add_library(cutils MODULE WITH_SOABI USE_SABI 3.10 src/asammdf/blocks/cutils.c)
+ 
+-target_link_libraries(cutils PRIVATE Python::NumPy libdeflate::libdeflate_static)
++target_link_libraries(cutils PRIVATE Python::NumPy libdeflate::libdeflate_shared)
+ 
+ install(TARGETS cutils DESTINATION "asammdf/blocks")
+-- 
+2.39.3 (Apple Git-146)
+
